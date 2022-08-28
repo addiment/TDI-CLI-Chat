@@ -1,6 +1,5 @@
 const process = require('node:process');
 const net = require('node:net');
-const fs = require('fs');
 const readline = require('node:readline');
 
 /**
