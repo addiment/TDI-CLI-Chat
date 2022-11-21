@@ -22,8 +22,7 @@ const ANSI_FG_BLACK = ANSI_ESCAPE + '30m';
 
 /**
  * Enum for a log message's type.
- * @readonly
- * @enum {0 | 1 | 2}
+ * @readonly @enum
  */
 const MessageType = {
     MESSAGE_SYSINFO: 0,
