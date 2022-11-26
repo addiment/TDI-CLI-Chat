@@ -1,5 +1,6 @@
-// For stdin/stdout and exit
+// For input/output, exiting the program, and command line arguments
 const process = require('node:process');
+const { stdin, stdout } = process;
 // For networking
 const net = require('node:net');
 // For user input
@@ -16,42 +17,49 @@ const PORT = 2023;
  * @property {MessageType} type Whether the message is something we sent, something we received, or something like an error message.
 */
 
-/** Array of all past messages.
- * @type {MessageStruct[]} */
+/** 
+ * Array of all past messages.
+ * @type {MessageStruct[]}
+ */
 var messageHistory = [];
-/** The socket messages are sent through 
- * @type {net.Socket} */
+/**
+ * The socket messages are sent through 
+ * @type {net.Socket}
+ */
 var messageSocket = null;
-/** The server (if hosting).
- * @type {net.Server} */
+/**
+ * The server (if hosting).
+ * @type {net.Server}
+ */
 var chatServer = null;
 
+// Our input controller
 const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
+    input: stdin,
+    output: stdout,
     prompt: '',
 });
 
 function regenPrompt() {
     let out = '';
-    for (var i = 0; i < process.stdout.columns; i++) {
+    for (var i = 0; i < stdout.columns; i++) {
         out += '\u2588';
     }
     out += '\n';
-    process.stdout.write(out);
-    process.stdout.cursorTo(rl.getCursorPos().cols, process.stdout.rows);
+    stdout.write(out);
+    stdout.cursorTo(rl.getCursorPos().cols, stdout.rows);
     rl.prompt(true);
 }
 
 // Sends an ANSI escape command to clear the screen, then re-prints all past messages and regenerates the prompt. 
 function fullRedraw() {
     // Clear the screen using special characters
-    process.stdout.write('\x1b[2J\x1b[3J');
-    process.stdout.cursorTo(0, process.stdout.rows); // Move the cursor to the bottom to start
-    messageHistory.forEach(msg => {
+    stdout.write('\x1b[2J\x1b[3J');
+    stdout.cursorTo(0, stdout.rows); // Move the cursor to the bottom to start
+    for (const msg of messageHistory) {
         pushMessage(msg.content, msg.type, true);
-    });
-    process.stdout.write('\n');
+    };
+    stdout.write('\n');
     regenPrompt();
 }
 
@@ -62,7 +70,7 @@ function fullRedraw() {
  */
 function printWithDirectionWrap(str, side = 'left', indicator = '') {
     let splitStrings = [];
-    let maxLineLength = Math.floor(process.stdout.columns / 2);
+    let maxLineLength = Math.floor(stdout.columns / 2);
     let splitCount = Math.ceil((str.length + indicator.length) / maxLineLength);
     let lineOffset = 0;
     if (splitCount > 1) {
@@ -75,9 +83,9 @@ function printWithDirectionWrap(str, side = 'left', indicator = '') {
         splitStrings.push(subStr);
     }
     for (let i = 0; i < splitStrings.length; i++) {
-        if (side == 'right') process.stdout.cursorTo(process.stdout.columns - lineOffset);
-        if (i == 0) process.stdout.write(indicator);
-        process.stdout.write(splitStrings[i] + '\n');
+        if (side == 'right') stdout.cursorTo(stdout.columns - lineOffset);
+        if (i == 0) stdout.write(indicator);
+        stdout.write(splitStrings[i] + '\n');
     }
 }
 
@@ -88,9 +96,9 @@ function printWithDirectionWrap(str, side = 'left', indicator = '') {
  * @param {boolean} [isRedraw] Whether or not to move the cursor around willy-nilly and add message to history. This is used for the {@linkcode fullRedraw} function.
  */
 function pushMessage(str, type = 'system', isRedraw) {
-    if (!isRedraw) process.stdout.moveCursor(0, -2);
-    process.stdout.cursorTo(0);
-    process.stdout.clearScreenDown();
+    if (!isRedraw) stdout.moveCursor(0, -2);
+    stdout.cursorTo(0);
+    stdout.clearScreenDown();
     if (!isRedraw) messageHistory.push({ content: str, type });
     switch (type) {
         case 'system':
@@ -105,9 +113,9 @@ function pushMessage(str, type = 'system', isRedraw) {
         default:
             throw new Error(`"${type}" is not a valid message type!`);
     }
-    process.stdout.cursorTo(0);
+    stdout.cursorTo(0);
     if (!isRedraw) {
-        process.stdout.moveCursor(0, 1);
+        stdout.moveCursor(0, 1);
         regenPrompt();
     }
     return;
@@ -123,6 +131,9 @@ function quit(error) {
     process.exitCode = !!error;
 }
 
+/**
+ * Closes the server.
+ */
 function closeServer() {
     if (chatServer) {
         chatServer.unref();
@@ -130,6 +141,9 @@ function closeServer() {
     }
 }
 
+/**
+ * Closes the shared socket connection.
+ */
 function closeSocket() {
     if (messageSocket) {
         messageSocket.unref();
@@ -139,31 +153,27 @@ function closeSocket() {
 }
 
 /**
- * Handles server/client connections.
- * @param {net.Socket} socket
- * @param {boolean} isReady
+ * When we receive a message
+ * @param {Buffer} data The message data
  */
-function handleSocket(socket, isReady) {
-    messageSocket = socket;
-    closeServer();
-
-    socket.once('connect', () => {
-        pushMessage(`Now connected to ${socket.remoteAddress || socket.localAddress}`, 'system');
-    });
-    if (isReady) socket.emit('connect', false);
-
-    socket.on('close', didErr => {
-        closeSocket();
-        pushMessage('Connection closed.', 'system');
-        quit(didErr);
-    });
-
-    socket.on('data', data => {
-        pushMessage(data.toString('utf-8'), 'incoming');
-    });
+function onReceiveMessage(data) {
+    pushMessage(data.toString(), 'incoming');
 }
 
-rl.once('SIGINT', () => {
+/**
+ * When the shared socket connection closes
+ * @param {boolean} didErr Whether or not it closed with an error
+ */
+function onSocketClose(didErr) {
+    closeSocket();
+    pushMessage('Connection closed.', 'system');
+    quit(didErr);
+}
+
+/**
+ * When we request to close the chat (run only once)
+ */
+function onQuit() {
     if (messageSocket) {
         pushMessage('Issued close.', 'system');
         closeSocket();
@@ -172,31 +182,67 @@ rl.once('SIGINT', () => {
         pushMessage('Stopped listening for connections.', 'system');
         quit(true);
     }
-});
+}
 
-rl.on('line', line => {
-    process.stdout.moveCursor(0, -1);
+/**
+ * When we press enter (to send a message)
+ * @param {string} line The content of the line
+ */
+function onSubmit(line) {
+    stdout.moveCursor(0, -1);
     if (messageSocket != null && line.trim().length > 0) {
         messageSocket.write(line);
         pushMessage(line, 'outgoing');
     } else {
         fullRedraw();
     }
-});
+}
 
-rl.resume();
-process.stdout.on('resize', fullRedraw);
-fullRedraw();
+/**
+ * Handles the initial server/client socket connection.
+ * @param {net.Socket} socket
+ * @param {boolean} isReady
+ */
+ function handleSocket(socket, isReady) {
+    // We aren't accepting any more connections, so close the server
+    closeServer();
+    // Store the socket connection as a global variable
+    messageSocket = socket;
+    pushMessage(`Now connected to ${socket.remoteAddress || socket.localAddress}`, 'system');
+    
+    // When we receive a message, run "onReceiveMessage"
+    socket.on('data', onReceiveMessage);
+    // When the socket closes, run "onSocketClose"
+    socket.on('close', onSocketClose);
+}
+
+/**
+ * When the listen server receives its first connection (run only once)
+ * @param {net.Socket} socket 
+ */
+function onServerConnection(socket) {
+    handleSocket(socket, true);
+    closeServer();
+}
+
+// When we press enter, run "onSubmit"
+rl.on('line', onSubmit);
+
+// When we press Ctrl + C, run "onQuit"
+rl.once('SIGINT', onQuit);
+
+// When the window is resized, run "fullRedraw"
+stdout.on('resize', fullRedraw);
+
+rl.resume(); // Start accepting user input
+fullRedraw(); // Redraw once to put something on the screen
 
 if (process.argv.includes('server')) {
     pushMessage("Waiting for a connection...", 'system');
     const server = net.createServer();
     chatServer = server;
     server.maxConnections = 1;
-    server.once('connection', socket => {
-        handleSocket(socket, true);
-        closeServer();
-    });
+    server.once('connection', onServerConnection);
     server.listen(2023);
 } else {
     pushMessage("Joining server...", 'system')
