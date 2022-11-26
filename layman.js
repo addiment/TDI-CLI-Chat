@@ -7,7 +7,6 @@ const net = require('node:net');
 const readline = require('node:readline');
 
 const CLIENT_ADDRESS = 'localhost';
-const PORT = 2023;
 
 /** @typedef {'system'|'incoming'|'outgoing'} MessageType */
 
@@ -203,7 +202,7 @@ function onSubmit(line) {
  * @param {net.Socket} socket
  * @param {boolean} isReady
  */
- function handleSocket(socket, isReady) {
+function handleSocket(socket, isReady) {
     // We aren't accepting any more connections, so close the server
     closeServer();
     // Store the socket connection as a global variable
@@ -249,7 +248,7 @@ if (process.argv.includes('server')) {
     handleSocket(
         net.createConnection({
             host: CLIENT_ADDRESS,
-            port: PORT
+            port: 2023
         })
     );
 }
