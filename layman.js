@@ -207,7 +207,17 @@ function handleSocket(socket, isReady) {
     closeServer();
     // Store the socket connection as a global variable
     messageSocket = socket;
-    pushMessage(`Now connected to ${socket.remoteAddress || socket.localAddress}`, 'system');
+
+    var motd = function () {
+        pushMessage(`Now connected to ${socket.remoteAddress || socket.localAddress}`, 'system');
+    };
+
+    if (isReady) {
+        motd()
+    } else {
+        socket.once('connect', motd);
+    }
+
     
     // When we receive a message, run "onReceiveMessage"
     socket.on('data', onReceiveMessage);
