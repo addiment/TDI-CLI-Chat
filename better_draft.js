@@ -1,6 +1,7 @@
 // For input/output, exiting the program, and command line arguments
 const process = require('node:process');
-const { stdin, stdout } = process;
+const stdin = process.stdin;
+const stdout = process.stdout;
 // For networking
 const net = require('node:net');
 // For user input
