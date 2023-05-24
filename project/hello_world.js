@@ -162,7 +162,7 @@ console.log(sago);
 const ant = "Unchangable!";
 console.log(ant);
 
-// Comment or delete these lines if you want the code to work,
-// these are examples of what NOT to do.
-ant = "it's totally changable!" // This won't work!
-const ant = "it's re-declarable!"; // Neither will this!
+// Comment or delete these lines if you want the code to work.
+// These are examples of what you CAN'T do.
+ant = "it's totally changable!"     // This won't work!
+const ant = "it's re-declarable!";  // Neither will this!
