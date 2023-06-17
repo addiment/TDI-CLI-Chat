@@ -64,8 +64,8 @@ console.log(decl); // expected output: "That's really cool!"
 true
 false
 
-// 2. Number, which can be an integer (i.e. 1, 6, 100, 3)
-//    or a floating-point decimal (i.e. 1.5, 0.753, 502.325)
+// 2. Number, which can be an integer (i.e. 1, -6, 100, 3)
+//    or a floating-point decimal (i.e. 1.5, -0.753, 502.325)
 
 2000 // Decimal (integral) notation.
 30.20 // Decimal (floating-point) notation.
