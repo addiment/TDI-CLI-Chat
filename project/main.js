@@ -4,11 +4,16 @@ const process = require('node:process');
 // Basically, it takes the variables we list from the object we put on the right side.
 // You can see more examples here:
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
-const { printMessage, regenPrompt, fullRedraw } = require('console.js');
+const { printMessage, regenPrompt, fullRedraw, rl } = require('./console.js');
+
+// For networking
+const net = require('node:net');
 
 // The address of the client.
 // Change this to the IP address of whoever you want to connect to (if you're the client)
 const SERVER_ADDRESS = 'localhost';
+// The port to use for connections
+const SERVER_PORT = 2023;
 
 /** 
  * Array of all past messages.
@@ -118,15 +123,16 @@ function handleSocket(socket, isReady) {
     // usable inside of this "handleSocket" function!
     function motd () {
         printMessage(`Now connected to ${socket.remoteAddress || socket.localAddress}`, 'system');
-    };
+    }
 
     if (isReady) {
-        motd()
+        // if connected, print the motd
+        motd();
     } else {
+        // if waiting to connect, print the motd when connected
         socket.once('connect', motd);
     }
 
-    
     // When we receive a message, run "onReceiveMessage"
     socket.on('data', onReceiveMessage);
     // When the socket closes, run "onSocketClose"
@@ -151,22 +157,26 @@ rl.once('SIGINT', onQuit);
 // When the window is resized, run "fullRedraw"
 stdout.on('resize', fullRedraw);
 
-rl.resume(); // Start accepting user input
-fullRedraw(); // Redraw once to put something on the screen
+// Start accepting user input
+rl.resume();
+// Redraw once to put something on the screen
+fullRedraw();
 
 if (process.argv.includes('server')) {
-    printMessage("Waiting for a connection...", 'system');
-    const server = net.createServer();
-    chatServer = server;
-    server.maxConnections = 1;
-    server.once('connection', onServerConnection);
-    server.listen(2023);
+    printMessage("Waiting for a connection...");
+    // Create a TCP server
+    chatServer = net.createServer();
+    // allow only one connection (this is one-on-one)
+    chatServer.maxConnections = 1;
+    chatServer.once('connection', onServerConnection);
+    chatServer.listen(SERVER_PORT);
 } else {
-    printMessage("Joining server...", 'system')
+    printMessage("Joining server...");
+    // Create a socket connection and then give it to the handleSocket function 
     handleSocket(
         net.createConnection({
             host: SERVER_ADDRESS,
-            port: 2023
+            port: SERVER_PORT
         })
     );
 }
