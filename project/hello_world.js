@@ -58,6 +58,7 @@ console.log(decl); // expected output: "That's really cool!"
 // Types that are inherent to a language are usually called "primitive" types.
 // JavaScript has 7 primitives, but we only really care about 5:
 
+// TODO: explain what a literal is
 // 1. Boolean, a value that represents either "true" or "false"
 
 true
