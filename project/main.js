@@ -1,11 +1,9 @@
 // For input/output, exiting the program, and command line arguments
 const process = require('node:process');
-// This syntax is called "destructuring assignment." 
-// Basically, it takes the variables we list from the object we put on the right side.
-// You can see more examples here:
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
-const { printMessage, regenPrompt, fullRedraw, rl } = require('./console.js');
-
+const stdout = process.stdout;
+const stdin = process.stdin;
+// For user input
+const readline = require('node:readline');
 // For networking
 const net = require('node:net');
 
@@ -15,11 +13,19 @@ const SERVER_ADDRESS = 'localhost';
 // The port to use for connections
 const SERVER_PORT = 2023;
 
-/** 
- * Array of all past messages.
- * @type {string[]}
- */
-var messageHistory = [];
+// Our input controller
+const rl = readline.createInterface({
+    input: stdin,
+    output: stdout,
+    prompt: '',
+});
+
+function regenPrompt() {
+    rl.setPrompt("\n> ")
+    // make sure the readline interface is accepting input 
+    rl.prompt(true);
+}
+
 /**
  * The socket messages are sent through 
  * @type {net.Socket}
@@ -38,7 +44,7 @@ var chatServer = null;
 function quit(error) {
     closeSocket();
     rl.close();
-    process.exitCode = !!error;
+    process.exitCode = Number(!error);
 }
 
 /**
@@ -63,20 +69,12 @@ function closeSocket() {
 }
 
 /**
- * When we receive a message
- * @param {Buffer} data The message data
- */
-function onReceiveMessage(data) {
-    printMessage(data.toString(), 'incoming');
-}
-
-/**
  * When the shared socket connection closes
  * @param {boolean} didErr Whether or not it closed with an error
  */
 function onSocketClose(didErr) {
     closeSocket();
-    printMessage('Connection closed.');
+    console.log('Connection closed.');
     quit(didErr);
 }
 
@@ -85,11 +83,11 @@ function onSocketClose(didErr) {
  */
 function onQuit() {
     if (messageSocket) {
-        printMessage('Issued close.');
+        console.log('Issued close.');
         closeSocket();
     } else if (chatServer) {
         closeServer();
-        printMessage('Stopped listening for connections.');
+        console.log('Stopped listening for connections.');
         quit(true);
     }
 }
@@ -99,13 +97,25 @@ function onQuit() {
  * @param {string} line The content of the line
  */
 function onSubmit(line) {
+    stdout.moveCursor(0, -2);
+    stdout.cursorTo(0);
+    stdout.clearScreenDown()
+    messageSocket.write(line);
+    console.log("You: " + line);
+    regenPrompt();
+}
+
+/**
+ * When we receive a message
+ * @param {Buffer} data The message data
+ */
+function onReceiveMessage(data) {
+    rl.pause()
     stdout.moveCursor(0, -1);
-    if (messageSocket != null && line.trim().length > 0) {
-        messageSocket.write(line);
-        printMessage('(you) > ' + line);
-    } else {
-        fullRedraw();
-    }
+    stdout.cursorTo(0);
+    stdout.clearScreenDown();
+    console.log("Them: " + data.toString());
+    regenPrompt();
 }
 
 /**
@@ -121,22 +131,23 @@ function handleSocket(socket, isReady) {
 
     // Don't be fooled- this "motd" function is only
     // usable inside of this "handleSocket" function!
-    function motd () {
-        printMessage(`Now connected to ${socket.remoteAddress || socket.localAddress}`, 'system');
+    function connectCallback() {
+        console.log(`--- Now connected to ${socket.remoteAddress || socket.localAddress} ---`);
+        // When we receive a message, run "onReceiveMessage"
+        socket.on('data', onReceiveMessage);
+        // When the socket closes, run "onSocketClose"
+        socket.on('close', onSocketClose);
+
+        regenPrompt();
     }
 
     if (isReady) {
         // if connected, print the motd
-        motd();
+        connectCallback();
     } else {
         // if waiting to connect, print the motd when connected
-        socket.once('connect', motd);
+        socket.once('connect', connectCallback);
     }
-
-    // When we receive a message, run "onReceiveMessage"
-    socket.on('data', onReceiveMessage);
-    // When the socket closes, run "onSocketClose"
-    socket.on('close', onSocketClose);
 }
 
 /**
@@ -154,24 +165,21 @@ rl.on('line', onSubmit);
 // When we press Ctrl + C, run "onQuit"
 rl.once('SIGINT', onQuit);
 
-// When the window is resized, run "fullRedraw"
-stdout.on('resize', fullRedraw);
-
 // Start accepting user input
 rl.resume();
-// Redraw once to put something on the screen
-fullRedraw();
 
-if (process.argv.includes('server')) {
-    printMessage("Waiting for a connection...");
+function doServerStuff() {
+    console.log("Waiting for a connection...");
     // Create a TCP server
     chatServer = net.createServer();
     // allow only one connection (this is one-on-one)
     chatServer.maxConnections = 1;
     chatServer.once('connection', onServerConnection);
     chatServer.listen(SERVER_PORT);
-} else {
-    printMessage("Joining server...");
+}
+
+function doClientStuff() {
+    console.log("Joining server...");
     // Create a socket connection and then give it to the handleSocket function 
     handleSocket(
         net.createConnection({
@@ -179,4 +187,10 @@ if (process.argv.includes('server')) {
             port: SERVER_PORT
         })
     );
+}
+
+if (process.argv.includes('server')) {
+    doServerStuff();
+} else {
+    doClientStuff();
 }
