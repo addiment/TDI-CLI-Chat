@@ -111,11 +111,16 @@ function onSubmit(line) {
  * @param {Buffer} data The message data
  */
 function onReceiveMessage(data) {
+    // make sure we don't accidentally overwrite anything
     rl.pause()
+    // move the cursor up one and all the way to the left
     stdout.moveCursor(0, -1);
     stdout.cursorTo(0);
+    // clear everything downwards
     stdout.clearScreenDown();
+    // Print out the message we received
     console.log("Them: " + data.toString());
+    // Restore the message prompt
     regenPrompt();
 }
 
@@ -133,12 +138,13 @@ function handleSocket(socket, isReady) {
     // Don't be fooled- this "motd" function is only
     // usable inside of this "handleSocket" function!
     function connectCallback() {
+        // Some JavaScript trickery: the "or" operator (aka. the two pipes) evaluates to whichever statement is true.
         console.log("--- Now connected to", (socket.remoteAddress || socket.localAddress), "---\n");
         // When we receive a message, run "onReceiveMessage"
         socket.on('data', onReceiveMessage);
         // When the socket closes, run "onSocketClose"
         socket.on('close', onSocketClose);
-
+        // Restore the message prompt
         regenPrompt();
     }
 
@@ -157,6 +163,7 @@ function handleSocket(socket, isReady) {
  */
 function onServerConnection(socket) {
     handleSocket(socket, true);
+    // Nobody else is connecting... why keep the server up? 
     closeServer();
 }
 
