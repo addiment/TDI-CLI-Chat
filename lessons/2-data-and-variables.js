@@ -1,35 +1,34 @@
 // ----- Objects & Data Types -----
 
 // Many programming languages have a concept called types.
-// Types that are inherent to a language are usually called "primitive" types.
+// Types that are inherent to a language instead of created by someone else are usually called "primitive" types.
 // JavaScript has 7 primitives, but we only really care about 5:
-// Primitives are created with **literals**, aka. typing out a value. 
-
+// Primitives can be created with **literals**, ie. typing out a value. 
+// Here's the 5 most common primitive types:
 
 // 1. Boolean, a value that represents either "true" or "false"
-//    Literals:
+//    Some example Boolean literals:
 
 true
 false
 
 // 2. Number, which can be an integer (i.e. 1, -6, 100, 3)
-//    or a floating-point decimal (i.e. 1.5, -0.753, 502.325)
-//    Some Example Literals:
+//    or a decimal (i.e. 1.5, -0.753, 502.325)
+//    Some example Number literals:
 
 2000 // Decimal (integral) notation.
 30.20 // Decimal (floating-point) notation.
-0x10 // Hexadecimal notation! We won't be using this (or will we ;) ),
+0x10 // Hexadecimal notation! We won't be using this,
      // but if you know it already, you can use it for numbers (if you want).
 0b1010 // Binary notation! Same deal as hexadecimal in terms of use.
 
-// 3. String, a sequence of characters strung (that's why they're called "strings")
-//    together in a line. (i.e. "String", "TDI is AWESOME!")
-//    Some Example Literals:
+// 3. String, a "string" of characters (that's why they're called "strings")
+//    Some example String literals:
 
-"JavaScript has a lot of types... or does it? ;)"
-'This example uses single quotes. There are very few differences...'
+"JavaScript sure has a lot of types"
+'This example uses single quotes, but works just the same.'
 
-// 4. "null", which is a special type that represents nothingness (Null. 0. Zip. Nada.).
+// 4. "null", which is a special type that represents nothingness (Null. Zip. Nada.).
 //    You can use the null type by using the "null" keyword.
 //    Literal:
 
@@ -67,20 +66,23 @@ let defButNoValue = null; // null
 
 let decl; // this is DECLARATION.
 console.log(decl); // expected output: undefined
-decl = "That's really cool!"; // this is DEFINITION, where we set the value.
+decl = "That's really cool!"; // Here's our defintion! This is where we set the value.
 console.log(decl); // expected output: "That's really cool!"
 
 // There's another keyword for declaring variables that we'll use:
-// "const" is used for constant (unchangable) values.
-// It can't be changed using "=" or redeclared with "const".
+// "const" is used for constant (unchangeable) values.
+// It can't be changed using "=" or redeclared with another "const".
 
-const ant = "Unchangable!";
+const ant = "Unchangeable!";
 console.log(ant);
 
 // Uncomment these lines if you want to see it fail.
 // These are examples of what you CAN'T do!
 
 /*
-ant = "it's totally changable!"     // This won't work!
+ant = "it's totally changeable!"     // This won't work!
 const ant = "it's re-declarable!";  // Neither will this!
 */
+
+// If you're especially curious, the last two datatypes we didn't mention are BigInt and Symbol.
+// You can read more about them at https://developer.mozilla.org/JavaScript/Data_structures 
