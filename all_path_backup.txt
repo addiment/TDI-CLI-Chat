@@ -1,0 +1,15 @@
+C:\Program Files\Eclipse Adoptium\jdk-17.0.7.7-hotspot\bin;
+C:\Program Files\Eclipse Adoptium\jre-11.0.19.7-hotspot\bin;
+C:\Program Files\Eclipse Adoptium\jdk-11.0.19.7-hotspot\bin;
+C:\Program Files (x86)\ActiveState Komodo IDE 12\;
+C:\Windows\system32;
+C:\Windows;
+C:\Windows\System32\Wbem;
+C:\Windows\System32\WindowsPowerShell\v1.0\;
+C:\Windows\System32\OpenSSH\;
+C:\Program Files\Inkscape\bin;
+C:\Program Files\dotnet\;
+C:\Program Files\MATLAB\R2021a\bin;
+%%CSIDL_LOCAL_APPDATA%%\Microsoft\WindowsApps;
+%%CSIDL_LOCAL_APPDATA%%\Programs\Microsoft VS Code\bin;
+%%CSIDL_LOCAL_APPDATA%%\GitHubDesktop\bin

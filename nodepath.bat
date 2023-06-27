@@ -1,2 +1,1 @@
-setx PATH "%PATH%;%userprofile%\nodejs\bin"
-pause
+powershell -Command "$uregpath = $(Get-ItemPropertyValue -Path HKCU:\Environment -Name 'Path'); Set-ItemProperty -Path HKCU:\Environment -Name 'Path' -Value $uregpath';'$env:userprofile'\nodejs\bin'"

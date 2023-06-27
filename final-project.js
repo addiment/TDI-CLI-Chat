@@ -21,7 +21,9 @@ const rl = readline.createInterface({
 });
 
 function regenPrompt() {
-    rl.setPrompt("\n> ")
+    // Kind of like console.log, but without formatting (we control everything)
+    stdout.write('\n');
+    rl.setPrompt("> ");
     // make sure the readline interface is accepting input 
     rl.prompt(true);
 }
@@ -74,20 +76,19 @@ function closeSocket() {
  */
 function onSocketClose(didErr) {
     closeSocket();
-    console.log('Connection closed.');
+    console.log('\n--- Connection closed. ---');
     quit(didErr);
 }
 
 /**
- * When we request to close the chat (run only once)
+ * When we request to close the chat (will only run once)
  */
 function onQuit() {
     if (messageSocket) {
-        console.log('Issued close.');
         closeSocket();
     } else if (chatServer) {
         closeServer();
-        console.log('Stopped listening for connections.');
+        console.log('--- Stopped listening for connections. ---');
         quit(true);
     }
 }
@@ -132,7 +133,7 @@ function handleSocket(socket, isReady) {
     // Don't be fooled- this "motd" function is only
     // usable inside of this "handleSocket" function!
     function connectCallback() {
-        console.log(`--- Now connected to ${socket.remoteAddress || socket.localAddress} ---`);
+        console.log("--- Now connected to", (socket.remoteAddress || socket.localAddress), "---\n");
         // When we receive a message, run "onReceiveMessage"
         socket.on('data', onReceiveMessage);
         // When the socket closes, run "onSocketClose"
@@ -169,7 +170,7 @@ rl.once('SIGINT', onQuit);
 rl.resume();
 
 function doServerStuff() {
-    console.log("Waiting for a connection...");
+    console.log("--- Waiting for a connection... ---");
     // Create a TCP server
     chatServer = net.createServer();
     // allow only one connection (this is one-on-one)
@@ -179,7 +180,7 @@ function doServerStuff() {
 }
 
 function doClientStuff() {
-    console.log("Joining server...");
+    console.log("--- Joining server... ---");
     // Create a socket connection and then give it to the handleSocket function 
     handleSocket(
         net.createConnection({

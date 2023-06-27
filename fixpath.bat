@@ -1,0 +1,1 @@
+powershell -Command "Set-ItemProperty -Path HKCU:\Environment -Name 'Path' -Value $env:userprofile'\AppData\Local\Microsoft\WindowsApps;'$env:userprofile'\AppData\Local\Programs\Microsoft VS Code\bin'"
