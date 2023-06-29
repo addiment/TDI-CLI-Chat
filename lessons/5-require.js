@@ -15,11 +15,20 @@ const process = require("node:process");
 // Creating a readline interface is how you actually take input and output.
 // Typically, we just call it "rl".
 // A readline interface requires "streams" (streams are like pipes, but with data instead of water)
-// for places to direct input and output. 
+// for places to direct input and output.
+let options = {
+    input: process.stdin,
+    output: process.stdout
+}
+const rl = readline.createInterface(options);
+
+// You can also just use an object literal!
+/*
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
 });
+*/
 
 // This is our callback for the readline question.
 // Whatever you type in 
@@ -50,7 +59,8 @@ function response(answer) {
     // parseFloat returns NaN if it can't figure out how to turn the text into a number.
     let answerAsNumber = parseFloat(answer);
 
-    if (answerAsNumber == NaN) { 
+    // CURSE YOU, JAVASCRIPT!!!!!!
+    if (Number.isNaN(answerAsNumber)) { 
         console.log("That's not a number :(");
     } else {
         console.log(answer, "* 2 is", answerAsNumber * 2);
@@ -61,5 +71,4 @@ function response(answer) {
     rl.close();
 }
 
-// 
 rl.question("Enter a number\n", response);

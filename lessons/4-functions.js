@@ -52,10 +52,10 @@ function letsMultiply(a, b) {
     return a * b;
 }
 
-let a = 10;
-let b = 8;
+let x = 10;
+let y = 8;
 
 // Our function is called instead of being treated as a value because of the (parenthesis).
-let c = letsMultiply(a, b);
+let c = letsMultiply(x, y);
 
-console.log(a, "divided by", b, "is", c);
+console.log(x, "multiplied by", y, "is", c);
