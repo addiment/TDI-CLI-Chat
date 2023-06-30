@@ -202,8 +202,8 @@ function doClientStuff() {
     );
 }
 
-if (process.argv.includes('server')) {
-    doServerStuff();
-} else {
+if (process.argv.includes('client')) {
     doClientStuff();
+} else {
+    doServerStuff();
 }
