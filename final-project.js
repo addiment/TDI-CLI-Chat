@@ -46,7 +46,12 @@ var chatServer = null;
 function quit(error) {
     closeSocket();
     rl.close();
-    process.exitCode = Number(!error);
+    if (error) {
+        process.exitCode = 1;
+    }
+    else {
+        process.exitCode = 0;
+    }
 }
 
 /**
@@ -89,7 +94,7 @@ function onQuit() {
     } else if (chatServer) {
         closeServer();
         console.log('--- Stopped listening for connections. ---');
-        quit(true);
+        quit(false);
     }
 }
 
